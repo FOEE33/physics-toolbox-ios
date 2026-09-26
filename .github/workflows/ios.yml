@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Show environment
         run: |
@@ -46,7 +46,8 @@ jobs:
       - name: Install CocoaPods deps
         run: |
           cd ios/App
-          pod install --repo-update || pod install
+          # 不加 --repo-update：那会重拉整个 spec 仓库（~1GB），CI 上极慢且易超时
+          pod install
 
       - name: Report deployment target (must be <= 15 for TrollStore device)
         run: |
