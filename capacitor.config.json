@@ -1,0 +1,9 @@
+{
+  "appId": "com.foee.physicstoolbox",
+  "appName": "PhysicsToolbox",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#f4f6fb"
+  }
+}
