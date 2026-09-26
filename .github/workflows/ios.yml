@@ -1,0 +1,91 @@
+name: Build unsigned IPA
+
+# 在 GitHub 的 macOS runner 上构建未签名 ipa（供 TrollStore 安装）
+# 本机是 Windows，无法本地构建 iOS，故全部放到云端
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Show environment
+        run: |
+          echo "node $(node -v)"
+          echo "xcode:"; xcodebuild -version
+          echo "pods:"; pod --version || echo "no cocoapods"
+
+      - name: Install npm deps
+        run: npm install --no-audit --no-fund
+
+      - name: Add iOS platform (generates Xcode project)
+        run: npx cap add ios
+
+      - name: Sync web assets into the native project
+        run: npx cap sync ios
+
+      - name: Set Chinese display name
+        run: |
+          PLIST=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 物理工具箱" "$PLIST" \
+            || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 物理工具箱" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" "$PLIST"
+
+      - name: Install CocoaPods deps
+        run: |
+          cd ios/App
+          pod install --repo-update || pod install
+
+      - name: Report deployment target (must be <= 15 for TrollStore device)
+        run: |
+          PLIST=ios/App/App/Info.plist
+          echo "=== MinimumOSVersion ==="
+          /usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$PLIST" || true
+          echo "=== IPHONEOS_DEPLOYMENT_TARGET ==="
+          grep -o "IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*" ios/App/App.xcodeproj/project.pbxproj | sort -u || true
+
+      - name: Build unsigned .app
+        run: |
+          cd ios/App
+          set -o pipefail
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            | tail -30
+
+      - name: Package into .ipa
+        run: |
+          cd ios/App
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          echo "app: $APP_PATH"
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qr PhysicsToolbox-unsigned.ipa Payload
+          ls -lh PhysicsToolbox-unsigned.ipa
+          du -sh PhysicsToolbox-unsigned.ipa | awk '{print "ipa size: "$1}'
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhysicsToolbox-ipa
+          path: ios/App/PhysicsToolbox-unsigned.ipa
+          if-no-files-found: error
