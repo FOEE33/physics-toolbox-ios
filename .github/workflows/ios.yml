@@ -43,11 +43,16 @@ jobs:
             || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 物理工具箱" "$PLIST"
           /usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" "$PLIST"
 
-      - name: Install CocoaPods deps
+      - name: Inspect native project layout
         run: |
           cd ios/App
-          # 不加 --repo-update：那会重拉整个 spec 仓库（~1GB），CI 上极慢且易超时
-          pod install
+          echo "--- ios/App ---"
+          ls -la
+          if [ -f Podfile ]; then
+            echo "::notice::Podfile present → CocoaPods project"
+          else
+            echo "::notice::No Podfile → Capacitor 8 uses Swift Package Manager"
+          fi
 
       - name: Report deployment target (must be <= 15 for TrollStore device)
         run: |
@@ -61,8 +66,10 @@ jobs:
         run: |
           cd ios/App
           set -o pipefail
-          xcodebuild \
-            -workspace App.xcworkspace \
+          # Capacitor 8 默认用 SPM（无 Podfile），此时用 -project；有 Pods 时才需要 -workspace
+          if [ -f Podfile ]; then TARGET="-workspace App.xcworkspace"; else TARGET="-project App.xcodeproj"; fi
+          echo "xcodebuild target: $TARGET"
+          xcodebuild $TARGET \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
