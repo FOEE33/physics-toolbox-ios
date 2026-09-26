@@ -1,0 +1,7 @@
+node_modules/
+ios/
+dist/
+*.ipa
+Payload/
+.DS_Store
+npm-debug.log*
