@@ -1,0 +1,17 @@
+{
+  "name": "physics-toolbox-ios",
+  "version": "0.2.0",
+  "private": true,
+  "description": "物理工具箱 iOS 版 —— Capacitor 壳 + 纯静态 Web 核心",
+  "scripts": {
+    "add:ios": "cap add ios",
+    "sync": "cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}
