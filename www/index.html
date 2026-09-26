@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no" />
+<title>物理工具箱 · 公式与量纲</title>
+<link rel="stylesheet" href="vendor/katex/katex.min.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 左：导航 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">φ</div>
+      <div class="brand-text">
+        <b>物理工具箱</b>
+        <span>公式 · 量纲</span>
+      </div>
+    </div>
+
+    <div class="modes">
+      <button class="mode active" data-mode="formula">公式库</button>
+      <button class="mode" data-mode="dimension">量纲</button>
+      <button class="mode" data-mode="constant">常数</button>
+      <button class="mode" data-mode="check">校验</button>
+    </div>
+
+    <div class="side-label" id="sideLabel">范围</div>
+    <nav class="filters" id="filters"></nav>
+
+    <div class="theme-box">
+      <div class="side-label">主题</div>
+      <div class="swatches" id="swatches"></div>
+    </div>
+  </aside>
+
+  <!-- ============ 中：列表 ============ -->
+  <main class="list-pane">
+    <div class="search-wrap">
+      <input id="search" class="search" type="search"
+             placeholder="搜公式 / 符号 / 量纲 / 关键词…" autocomplete="off" />
+      <kbd>/</kbd>
+    </div>
+    <div class="list-meta" id="listMeta"></div>
+    <div class="list" id="list"></div>
+  </main>
+
+  <!-- ============ 右：详情 ============ -->
+  <section class="detail-pane" id="detail"></section>
+
+</div>
+
+<script src="vendor/katex/katex.min.js"></script>
+<script src="data/formulas.js"></script>
+<script src="data/constants.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
